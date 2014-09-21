@@ -3,7 +3,7 @@ This is a simple bot for http://vindinium.org/ implemented in SWI-Prolog.
 This works with SWI-Prolog 7 or later, with HTTP support installed.
 For most Linux distributions, this means it is easiest to build SWI-Prolog from source. See http://www.swi-prolog.org/build/ for details.
 
-The main program is contained in a single file, `vindinium.pl`. Currently, there is a single, ``greedy'' bot implemented in `greedy.pl`. The user key is read from a plain text file containing nothing but the key, called by default `userkey` (you can change this: see the first line of `vindinium.pl`).
+The main program is contained in a single file, `vindinium.pl`. Currently, there is a single, "greedy" bot implemented in `greedy.pl`. The user key is read from a plain text file containing nothing but the key, called by default `userkey` (you can change this: see the first line of `vindinium.pl`).
 
 To run the bot, start SWI-Prolog in the directory with the three files, and load the program:
 
