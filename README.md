@@ -39,4 +39,13 @@ The bot implemented in `greedy.pl` is... greedy. He will always rush to the clos
 
 If everything goes well, both `fight/0` and `train/1` should succeed once the game has finished. Failure most probably indicates an error (a bug in the program) that I haven't noticed yet.
 
+After making any changes to your code, use `make/0` to re-load everything:
+
+~~~
+?- make.
+% Updating index for library /home/boris/lib/swipl-7.1.23/library/
+% /home/boris/code/vindinium/greedy compiled into bot 0.01 sec, 27 clauses
+true.
+~~~
+
 Enjoy!
