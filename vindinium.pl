@@ -60,8 +60,6 @@ init_game(Url, Form, Game, State_of_mind) :-
     json:atom_json_dict(Reply, Game, []),
     bot:init(Game, State_of_mind).
 
-:- use_module(library(www_browser)).
-
 take_turn(State_of_mind, Game) :-
     (   Game.game.finished == false
     ->  bot:move(State_of_mind, Game, New_state_of_mind, Dir),
