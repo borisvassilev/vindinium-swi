@@ -27,7 +27,8 @@ set_key :-
         read_string(File, "\n", "\n",  _, Key),
         close(File)
     ),
-    assertz(key(Key)).
+    atom_string(Key_atom, Key),
+    assertz(key(Key_atom)).
 
 game_url(training, "http://vindinium.org/api/training").
 game_url(arena, "http://vindinium.org/api/arena").
@@ -39,10 +40,12 @@ fight :-
     game_url(arena, Url),
     play(Url, []).
 
+:- use_module(library(www_browser)).
 play(Url, More_options) :-
     key(Key),
     init_game(Url, [key=Key|More_options], Game, State_of_mind),
-    www_open_url(Game.viewUrl),
+    format("~w~n", [Game.viewUrl]),
+    www_browser:www_open_url(Game.viewUrl),
     take_turn(State_of_mind, Game).
 
 
@@ -51,7 +54,8 @@ play(Url, More_options) :-
 :- use_module('greedy.pl'). % select your bot
 
 init_game(Url, Form, Game, State_of_mind) :-
-    http_client:http_post(Url, form(Form), Reply, [timeout(5)]),
+    % wait 10 min
+    http_client:http_post(Url, form(Form), Reply, [timeout(60*10)]),
     json:atom_json_dict(Reply, Game, []),
     bot:init(Game, State_of_mind).
 
@@ -65,7 +69,8 @@ take_turn(State_of_mind, Game) :-
             Game.playUrl,
             form([key=Key, dir=Dir]),
             Reply,
-            [connection('Keep-Alive'), timeout(5)]
+            % keep alive, wait 15 sec
+            [connection('Keep-Alive'), timeout(15)]
         ),
         json:atom_json_dict(Reply, Game_next, []),
         take_turn(New_state_of_mind, Game_next)
