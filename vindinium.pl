@@ -20,7 +20,7 @@ key_filename(userkey). % change if necessary
 :- initialization(set_key).
 
 set_key :-
-    abolish(key/1),
+    retractall(key(_)),
     key_filename(Filename),
     setup_call_cleanup(
         open(Filename, read, File),
@@ -44,8 +44,7 @@ fight :-
 play(Url, More_options) :-
     key(Key),
     init_game(Url, [key=Key|More_options], Game, State_of_mind),
-    format("~w~n", [Game.viewUrl]),
-    www_browser:www_open_url(Game.viewUrl),
+    www_open_url(Game.viewUrl),
     take_turn(State_of_mind, Game).
 
 
@@ -54,25 +53,23 @@ play(Url, More_options) :-
 :- use_module('greedy.pl'). % select your bot
 
 init_game(Url, Form, Game, State_of_mind) :-
-    % wait 10 min, time is in seconds
-    Wait is 10 * 60,
-    http_client:http_post(Url, form(Form), Reply, [timeout(Wait)]),
-    json:atom_json_dict(Reply, Game, []),
-    bot:init(Game, State_of_mind).
+    Wait is 15 * 60, % wait 15 min, time is in seconds
+    http_post(Url, form(Form), Reply, [timeout(Wait)]),
+    atom_json_dict(Reply, Game, []),
+    bot_init(Game, State_of_mind).
 
 take_turn(State_of_mind, Game) :-
     (   Game.game.finished == false
-    ->  bot:move(State_of_mind, Game, New_state_of_mind, Dir),
+    ->  bot_move(State_of_mind, Game, New_state_of_mind, Dir),
         key(Key),
-        http_client:http_post(
+        http_post(
             Game.playUrl,
             form([key=Key, dir=Dir]),
             Reply,
-            % keep alive, wait 15 sec
-            [connection('Keep-Alive'), timeout(15)]
+            [connection('Keep-Alive'), timeout(60)]
         ),
-        json:atom_json_dict(Reply, Game_next, []),
+        atom_json_dict(Reply, Game_next, []),
         take_turn(New_state_of_mind, Game_next)
-    ;   http_client:http_disconnect(all)
+    ;   http_disconnect(all)
     ).
 

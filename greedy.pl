@@ -15,7 +15,7 @@
 % You should have received a copy of the GNU General Public License
 % along with vindinium-swi.  If not, see <http://www.gnu.org/licenses/>.
 %
-:- module(bot, [init/2, move/4]).
+:- module(bot, [bot_init/2, bot_move/4]).
 
 :- dynamic hero/1.          % hero's ID this game
 :- dynamic w/2.             % accessible tiles
@@ -24,13 +24,13 @@
 :- dynamic gold/2.          % gold mines
 
 clean_db :-
-    abolish(hero/1),
-    abolish(w/2),
-    abolish(tavern/2),
-    abolish(hero_spawn/2),
-    abolish(gold/2).
+    retractall(hero(_)),
+    retractall(w(_,_)),
+    retractall(tavern(_,_)),
+    retractall(hero_spawn(_,_)),
+    retractall(gold(_,_)).
 
-init(Game, deliberating) :-
+bot_init(Game, deliberating) :-
     clean_db,
     assertz(hero(Game.hero.id)),
     atom_chars(Game.game.board.tiles, Tiles),
@@ -73,12 +73,12 @@ path_to_gold(Game, Path) :-
     HX = Game.hero.pos.x,
     HY = Game.hero.pos.y,
     maplist(gold_seed(HX, HY), Golds, Seeds),
-    heaps:list_to_heap(Seeds, Openset),
+    list_to_heap(Seeds, Openset),
     find_path(HX, HY, Openset, Path).
 
 gold_seed(HX, HY, gold(X, Y), H-path(X, Y, [], Visited)) :-
     manhattan_distance(HX, HY, X, Y, H),
-    assoc:empty_assoc(Visited).
+    empty_assoc(Visited).
 
 manhattan_distance(X1, Y1, X2, Y2, D) :-
     D is abs(X1 - X2) + abs(Y1 - Y2).
@@ -94,7 +94,7 @@ not_my_gold(Tiles, Size, Hero, gold(X, Y)) :-
     \+ sub_atom(Tiles, Before, 1, _, Hero).
 
 find_path(HX, HY, Open0, Path) :-
-    heaps:get_from_heap(Open0, _H, path(X, Y, Dirs, Visited), Open),
+    get_from_heap(Open0, _H, path(X, Y, Dirs, Visited), Open),
     (   HX == X, HY == Y
     ->  Path = Dirs
     ;   findall(n(NX, NY, Dir), n(X, Y, NX, NY, Dir), Ns),
@@ -109,32 +109,32 @@ n(X, Y, NX, Y, 'South') :- NX is X - 1, w(NX, Y).
 
 add_nodes([], _, _, _, _, Final, Final).
 add_nodes([n(X, Y, Dir)|Rest], HX, HY, Dirs, Visited, Open, Final) :-
-    (   assoc:get_assoc(w(X, Y), Visited, 0)
+    (   get_assoc(w(X, Y), Visited, 0)
     ->  Open = Open1
-    ;   assoc:put_assoc(w(X, Y), Visited, 0, Visited1),
+    ;   put_assoc(w(X, Y), Visited, 0, Visited1),
         manhattan_distance(HX, HY, X, Y, H),
         length(Dirs, D),
         NH is D + 1 + H,
-        heaps:add_to_heap(Open, NH, path(X, Y, [Dir|Dirs], Visited1), Open1)
+        add_to_heap(Open, NH, path(X, Y, [Dir|Dirs], Visited1), Open1)
     ),
     add_nodes(Rest, HX, HY, Dirs, Visited, Open1, Final).
 
 :- use_module(library(random)).
 
-move(deliberating, Game, New_state_of_mind, Dir) :-
+bot_move(deliberating, Game, New_state_of_mind, Dir) :-
     (   path_to_gold(Game, [First|Rest])
     ->  New_state_of_mind = get_rich(Rest),
         Dir = First
-    ;   move(confused, Game, _, Dir),
+    ;   bot_move(confused, Game, _, Dir),
         New_state_of_mind = deliberating
     ).
 
-move(get_rich(Path), Game, New_state_of_mind, Dir) :-
+bot_move(get_rich(Path), Game, New_state_of_mind, Dir) :-
     (   Path = [Dir|Rest]
     ->  New_state_of_mind = get_rich(Rest)
-    ;   move(deliberating, Game, New_state_of_mind, Dir)
+    ;   bot_move(deliberating, Game, New_state_of_mind, Dir)
     ).
 
-move(confused, _, _, Dir) :-
-    random:random_member(Dir, ['Stay', 'East', 'West', 'North', 'South']).
+bot_move(confused, _, _, Dir) :-
+    random_member(Dir, ['Stay', 'East', 'West', 'North', 'South']).
 
