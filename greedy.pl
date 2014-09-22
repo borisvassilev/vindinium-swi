@@ -94,7 +94,6 @@ not_my_gold(Tiles, Size, Hero, gold(X, Y)) :-
     \+ sub_atom(Tiles, Before, 1, _, Hero).
 
 find_path(HX, HY, Open0, Path) :-
-    \+ heaps:empty_heap(Open0),
     heaps:get_from_heap(Open0, _H, path(X, Y, Dirs, Visited), Open),
     (   HX == X, HY == Y
     ->  Path = Dirs
