@@ -50,7 +50,7 @@ play(Url, More_options) :-
 
 :- use_module(library(http/http_client)).
 :- use_module(library(http/json)).
-:- use_module('greedy.pl'). % select your bot
+:- use_module('randbot.pl'). % select your bot
 
 init_game(Url, Form, Game, State_of_mind) :-
     Wait is 15 * 60, % wait 15 min, time is in seconds
