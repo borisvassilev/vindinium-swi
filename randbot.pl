@@ -30,7 +30,7 @@ clean_db :-
 
 bot_init(Game, walking_around) :-
     clean_db,
-    atom_chars(Game.game.board.tiles, Tiles),
+    atom_codes(Game.game.board.tiles, Tiles),
     length(Tiles, Len),
     format("Size ~d, length ~d~n", [Game.game.board.size, Len]),
     phrase(tiles(Game.game.board.size, 0), Tiles).
@@ -49,19 +49,19 @@ tiles(Size, I) -->
     tiles(Size, I1).
 tiles(_, _) --> [].
 
-tile('#', _, _) --> ['#'].
-tile(' ', X, Y) --> [' '],
+tile(0'#, _, _) --> `#`.
+tile(0'\s /* space */, X, Y) --> ` `,
     {   assertz(w(X, Y))
     }.
-tile('[', X, Y) --> [']'],
+tile(0'[, X, Y) --> `]`,
     {   assertz(tavern(X, Y))
     }.
-tile('@', X, Y) --> [H],
-    {   atom_number(H, N),
+tile(0'@, X, Y) --> [H],
+    {   number_codes(N, [H]),
         assertz(hero_spawn(N, w(X, Y))),
         assertz(w(X, Y))
     }.
-tile('$', X, Y) --> ['-'],
+tile(0'$, X, Y) --> `-`,
     {   assertz(gold(X, Y))
     }.
 
